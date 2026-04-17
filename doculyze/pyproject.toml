@@ -1,8 +1,0 @@
-[project]
-dynamic = ["dependencies"]
-name    = "doculyze"
-version = "0.1.0"
-
-# --
-[tool.setuptools]
-packages = ["medscan", "trust-generator"]

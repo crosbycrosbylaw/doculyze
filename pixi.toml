@@ -59,6 +59,7 @@ python   = ">=3.13"
 tqdm     = ">=4.67.3"
 
 [feature.python.pypi-dependencies]
+doculyze-core   = { path = "doculyze/core", editable = true }
 medscan         = { path = "doculyze/medscan", editable = true }
 trust-generator = { path = "doculyze/trust-generator", editable = true }
 
