@@ -1,12 +1,13 @@
 # ruff: noqa: F401
 from __future__ import annotations
-from typing import TYPE_CHECKING
-from ramda_py.types import *
+
+from typing import TYPE_CHECKING, Literal
 
 if TYPE_CHECKING:
-    from datetime import date, time, datetime
-    from fitz import TextPage, Page, Document
     from argparse import ArgumentParser, _SubParsersAction
+    from datetime import date, datetime, time
+
+    from fitz import Document, Page, TextPage
 
 type Subparsers = _SubParsersAction[ArgumentParser]
 type ValidationSubject = Literal["injuries", "treatments"]

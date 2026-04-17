@@ -1,20 +1,46 @@
+# ruff: noqa: BLE001
 from __future__ import annotations
 
+import importlib
 import json
 import sys
-import wx
 import typing
+from datetime import date
+from pathlib import Path
+from typing import TYPE_CHECKING, Any
 
-from ramda_py.decor import *
-from ramda_py.util import *
-from typing import TYPE_CHECKING
-
+from .platform import if_win
 
 if TYPE_CHECKING:
-    from datetime import date
-    from ramda_py.types import *
+    from collections.abc import Generator, Iterable, Iterator
 
-DATA_DIR = rootpath(__file__, "data", mkdir=True, resolve=True).as_posix()
+
+def import_deps():
+    global wx
+    wx = importlib.import_module("wx")
+
+
+if_win(import_deps)
+
+
+root: Path | None = None
+
+for p in Path(__file__).parents:
+    if p.joinpath(".git").exists():
+        root = p
+        break
+
+if root is None:
+    msg = "Failed to resolve project root"
+    raise FileNotFoundError(msg)
+
+
+DATA_DIR = root.joinpath("data").resolve()
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+DATA_DIR = DATA_DIR.as_posix()
+
+LOGS_DIR = root.joinpath("logs").resolve()
+LOGS_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class argtype:
@@ -53,7 +79,7 @@ class argtype:
 
 class console:
     NEWLINE = typing.final(chr(13) + chr(10) if sys.platform == "win32" else chr(10))
-    FILE = typing.final(rootpath(__file__, "logs", mkdir=True) / "latest-execution.log")
+    FILE = typing.final(LOGS_DIR / "latest-execution.log")
     WHITELIST = typing.final(["progress"])
     BLACKLIST = typing.final([
         "mupdf error",
@@ -73,19 +99,21 @@ class console:
     def json(
         cls,
         key: str | None = None,
-        obj: JSONDict | None = None,
+        obj: dict[str, Any] | None = None,
         *,
         indent: int = 4,
-        **kwds: JSONSerializable,
+        **kwds: Any,
     ) -> None:
         obj = {**(obj or {}), **kwds}
-        data: JSONDict = obj if not key else {key: obj}
+        data: dict[str, Any] = obj if not key else {key: obj}
         cls.log(json.dumps(obj=data, indent=indent))
 
     @classmethod
     def log(cls, *lines: object) -> None:
         text = " ".join(str(line).lower() for line in lines)
-        if all(item not in text for item in cls.WHITELIST) or any(item in text for item in cls.BLACKLIST):
+        if all(item not in text for item in cls.WHITELIST) or any(
+            item in text for item in cls.BLACKLIST
+        ):
             with cls.FILE.open("a+t", encoding="utf-8") as f:
                 print(*lines, sep=cls.NEWLINE, file=f)
         else:
@@ -97,9 +125,12 @@ class console:
         exception: Exception | type[Exception] | None = None,
         fatal: bool = False,
     ) -> None:
-        exception and console.log(exception)
-        lines and console.log(lines)
-        fatal and sys.exit(1)
+        if exception:
+            console.log(exception)
+        if lines:
+            console.log(lines)
+        if fatal:
+            sys.exit(1)
 
     @staticmethod
     def confirm(prompt: str) -> bool:
@@ -135,7 +166,12 @@ class track[I]:
     def progress(self) -> str:
         return f"progress: {self.current}/{self.total}\n"
 
-    def __init__(self, iterable: Iter[I], desc: str, total: int | None = None) -> None:
+    def __init__(
+        self,
+        iterable: Iterable[I],
+        desc: str,
+        total: int | None = None,
+    ) -> None:
         self.total = total if not isinstance(iterable, typing.Sized) else len(iterable)
         self.description = desc
         self.iterator = iter(iterable)

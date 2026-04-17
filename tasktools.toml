@@ -1,0 +1,9 @@
+# tasktools.toml — project-level configuration for tasktools
+# ── Git ──────────────────────────────────────────────────────────────────────
+[gh]
+dry-run = false
+# ── Python ───────────────────────────────────────────────────────────────────
+[py]
+packages_dir = "doculyze"
+parallel     = true
+pattern      = "trust-generator"

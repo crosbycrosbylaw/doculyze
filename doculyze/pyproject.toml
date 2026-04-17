@@ -1,8 +1,8 @@
 [project]
 dynamic = ["dependencies"]
-name    = "crosbydev-pythonapps"
+name    = "doculyze"
 version = "0.1.0"
 
 # --
 [tool.setuptools]
-packages = ["scripts"]
+packages = ["medscan", "trust-generator"]

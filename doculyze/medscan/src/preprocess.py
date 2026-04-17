@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from apps.common import DATA_DIR, timings, console, argtype
-
-import fitz
 import typing
 
-if typing.TYPE_CHECKING:
-    from .typeshed import *
+import fitz
 
+from .common import DATA_DIR, argtype, console
+
+if typing.TYPE_CHECKING:
+    from collections.abc import Generator
+
+    from .typeshed import *
 from pathlib import Path
 
 
@@ -31,7 +33,9 @@ class Preprocessor:
 
     def _get_path(self, suffix: str = "") -> Path:
         suffix_with_ext = suffix if ".pdf" in suffix else f"{suffix}.pdf"
-        return (self.out_dir or self.file_in.parent) / f"{self.file_in.stem}{suffix_with_ext}"
+        return (
+            self.out_dir or self.file_in.parent
+        ) / f"{self.file_in.stem}{suffix_with_ext}"
 
     def _clone_doc(
         self,
@@ -64,7 +68,6 @@ class Preprocessor:
             )
             prev = curr
 
-    @timings()
     def preprocess(self) -> None:
         should_trim = self._trim_range_exists()
 

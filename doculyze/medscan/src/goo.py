@@ -1,13 +1,26 @@
 from __future__ import annotations
 
-from gooey import Gooey, GooeyParser
-
+import importlib
+from argparse import ArgumentParser
+from collections.abc import Callable
 from functools import wraps
-from typing import TYPE_CHECKING, final
+from typing import Any, final
 
-if TYPE_CHECKING:
-    from argparse import ArgumentParser
-    from ramda_py.types import *
+from .platform import if_win
+
+
+class GooeyParser(ArgumentParser):
+    pass
+
+
+def import_deps():
+    global GooeyParser, Gooey
+    gooey = importlib.import_module("Gooey")
+    GooeyParser = gooey.GooeyParser
+    Gooey = gooey.Gooey
+
+
+if_win(import_deps)
 
 DEFAULT_GOOEY_ARGS = final({
     "header_show_help": True,
@@ -55,5 +68,5 @@ def gooify[**P, T](
     return decorator
 
 
-def gooparse(desc: str) -> GooeyParser | ArgumentParser:
+def gooparse(desc: str) -> Any | ArgumentParser:
     return GooeyParser(description=desc)

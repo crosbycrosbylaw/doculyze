@@ -1,18 +1,40 @@
 from __future__ import annotations
 
 import datetime as dt
-import math
+import importlib
 import json
-import ollama
+import math
 import typing
+
+from .extract import Extractor
+from .platform import if_win
+
+try:
+    import importlib
+
+    ollama = importlib.import_module("ollama")
+except ImportError:
+    msg = "Ollama must be installed to use the analysis features."
+    raise OSError(msg)
 
 if typing.TYPE_CHECKING:
     from .typeshed import *
 
 from pathlib import Path
-from apps.common import console, argtype, retry, timings, track, DATA_DIR
 
-from .extract import Extractor
+
+def import_deps():
+    global argtype, console, retry, track, ollama, DATA_DIR
+    ollama = importlib.import_module("ollama")
+    common = importlib.import_module(".", "common")
+    argtype = common.argtype
+    console = common.console
+    retry = common.retry
+    track = common.track
+    DATA_DIR = common.DATA_DIR
+
+
+if_win(import_deps)
 
 SYSTEM_PROMPT = typing.final("""
 You are a medical data analyst tasked with extracting information from the plaintext parsed from a set of PDF files containing an individual's medical records.
@@ -62,7 +84,7 @@ PROMPT_LENGTH = typing.final(
     len(SYSTEM_PROMPT) + len(PROMPT_TEMPLATE.format(desc="", date="", plaintext=""))
 )
 
-TODAY = dt.datetime.now().date().isoformat()
+TODAY = dt.datetime.now(dt.UTC).date().isoformat()
 
 
 class Analyzer(Extractor):
@@ -72,7 +94,7 @@ class Analyzer(Extractor):
     model_id: str = "gemma3n:e4b"
 
     @property
-    def _options(self) -> ollama.Options:
+    def _options(self) -> typing.Any:
         return ollama.Options(
             temperature=self.temperature,
             num_ctx=self.max_tokens,
@@ -86,15 +108,17 @@ class Analyzer(Extractor):
     desc: str
     date: date
 
-    @retry(max_retries=3)
+    @globals().get("retry", lambda **_: None)(max_retries=3)
     def _pull_model(self) -> None:
         models = {m.model for m in ollama.list().models}
         if self.model_id not in models:
             ollama.pull(self.model_id)
 
     @property
-    def config(self) -> JSONDict:
-        input_files: JSONList = [f.name for f in self.path.iterdir() if f.suffix == ".pdf"]
+    def config(self) -> dict[str, typing.Any]:
+        input_files: list[typing.Any] = [
+            f.name for f in self.path.iterdir() if f.suffix == ".pdf"
+        ]
         return {
             "model_id": self.model_id,
             "input_files": input_files,
@@ -127,7 +151,7 @@ class Analyzer(Extractor):
             )
 
         output_text: str = ""
-        match_counts: dict[str, Any] = {}
+        match_counts: dict[str, typing.Any] = {}
 
         console.json(global_configuration=self.config)
 
@@ -157,8 +181,7 @@ class Analyzer(Extractor):
 
             try:
 
-                @timings()
-                def generate_response() -> str:
+                def generate_response(prompt: ... = prompt) -> str:
                     response = ollama.generate(
                         model=self.model_id,
                         system=SYSTEM_PROMPT,
@@ -176,18 +199,20 @@ class Analyzer(Extractor):
 
                 from .validate import ValidationDict
 
-                results, match_counts[f.stem] = ValidationDict(plaintext, analysis_data).validate()
+                results, match_counts[f.stem] = ValidationDict(
+                    plaintext, analysis_data
+                ).validate()
 
                 out_file = self.results_dir / f"{f.stem}_analysis.json"
                 out_file.write_text(json.dumps(results, indent=4))
 
             except json.JSONDecodeError as e:
                 console.error(f"Error parsing JSON from LLM for {f.name}.", exception=e)
-                raise e
+                raise RuntimeWarning from e
 
             except Exception as e:
                 console.error(exception=e)
-                raise e
+                raise RuntimeError from e
 
         console.json(match_counts=match_counts)
 

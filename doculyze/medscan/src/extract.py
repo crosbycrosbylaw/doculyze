@@ -1,9 +1,11 @@
 from __future__ import annotations
-from apps.common import track, console
-from .typeshed import JSONDict
+
+import importlib
+import typing
 
 import fitz
-import typing
+
+from .platform import if_win
 
 if typing.TYPE_CHECKING:
     from .typeshed import *
@@ -11,7 +13,19 @@ if typing.TYPE_CHECKING:
 from pathlib import Path
 
 
-Metadata = typing.NamedTuple("Metadata", [("path", Path), ("json", JSONDict)])
+def import_deps():
+    global console, track
+    common = importlib.import_module(".", "common")
+    console = common.console
+    track = common.track
+
+
+if_win(import_deps)
+
+
+class Metadata(typing.NamedTuple):
+    path: Path
+    json: dict[str, typing.Any]
 
 
 class Extractor:
@@ -58,13 +72,14 @@ class Extractor:
         path = (override or self.path) / dirname
         if not path.exists():
             path.mkdir()
-        elif any(path.iterdir()):
-            if not console.confirm(f"Overwrite existing files at '{path}'?"):
-                match dirname:
-                    case "analysis":
-                        raise SystemExit
-                    case "plaintext":
-                        self._skip_extract = True
+        elif any(path.iterdir()) and not console.confirm(
+            f"Overwrite existing files at '{path}'?"
+        ):
+            match dirname:
+                case "analysis":
+                    raise SystemExit
+                case "plaintext":
+                    self._skip_extract = True
         return path
 
     custom_text_dir: Path | None = None
@@ -81,7 +96,7 @@ class Extractor:
 
     def _process_textpage_chunk(
         self,
-        textpages: Iter[TextPage],
+        textpages: typing.Iterable[TextPage],
     ) -> str:
         return chr(12).join(
             textpage.extractText()
@@ -107,11 +122,15 @@ class Extractor:
         text_dir = self.text_dir
 
         if self._skip_extract:
-            text_files = [f for f in text_dir.iterdir() if f.suffix == ".txt" and f.is_file()]
+            text_files = [
+                f for f in text_dir.iterdir() if f.suffix == ".txt" and f.is_file()
+            ]
             self.set_total_files(len(text_files))
             return text_files
 
-        input_files = [f for f in self.path.iterdir() if f.suffix == ".pdf" and f.is_file()]
+        input_files = [
+            f for f in self.path.iterdir() if f.suffix == ".pdf" and f.is_file()
+        ]
         self.set_total_files(len(input_files))
 
         chunk_generators = [

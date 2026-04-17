@@ -4,26 +4,78 @@ channels  = ["conda-forge"]
 platforms = ["linux-64", "win-64"]
 preview   = ["pixi-build"]
 
-[dependencies]
+[environments]
+default = ["dev", "python"]
+
+[target.win.activation]
+scripts = ["scripts/tasktools/install.bat"]
+
+[target.unix.activation]
+scripts = ["scripts/tasktools/install.sh"]
+
+[feature.dev.dependencies]
 ipykernel   = "*"
 ipywidgets  = "*"
+mypy        = "*"
 pyinstaller = "*"
-python      = ">=3.13"
-rampy       = { git = "https://github.com/zaynram/ramda-py" }
-tqdm        = "*"
+pytest      = "*"
 
-[environments]
-default = []
+[feature.dev.tasks]
 
-[pypi-dependencies]
-apps     = { path = "apps", editable = true }
-gooey    = "*"
-ollama   = ">=0.5.3, <0.6"
-pydantic = "==2.12.0a1"
-pymupdf  = ">=1.26.4, <2"
-wxpython = "*"
+    [feature.dev.tasks.release]
+    args        = [{ arg = "bump", default = "patch" }]
+    cmd         = "tasktools gh release {{ bump }}"
+    description = "Bump version, commit, tag, and push. Usage: pixi run release [patch|minor|major]"
 
-[tasks]
-  [tasks.app]
-  args = [{ arg = "NAME" }]
-  cmd  = ["python", "{{ NAME }}.py"]
+    [feature.dev.tasks.push]
+    args        = [{ arg = "message", default = "auto-commit" }]
+    cmd         = "tasktools gh commit"
+    description = "Commit and push parent repo only. Use push-all when submodules also changed. Usage: pixi run push [message]"
+    env         = { GIT_MESSAGE = "{{ message }}" }
+
+    [feature.dev.tasks.push-sub]
+    args        = ["submodule", { arg = "message", default = "auto-commit" }]
+    cmd         = "tasktools gh commit-sub {{ submodule }}"
+    description = "Commit and push a single submodule. Usage: pixi run push-sub <submodule> [message]"
+    env         = { GIT_MESSAGE = "{{ message }}" }
+
+    [feature.dev.tasks.push-all]
+    args        = [{ arg = "message", default = "auto-commit" }]
+    cmd         = "tasktools gh commit-all"
+    description = "Commit and push all dirty submodules first, then parent (correct submodule-before-parent ordering). Usage: pixi run push-all [message]"
+    env         = { GIT_MESSAGE = "{{ message }}" }
+
+    [feature.dev.tasks.status]
+    cmd         = "tasktools gh status"
+    description = "Git status across parent repo and all submodules. Run before committing to verify scope of changes."
+
+
+    # ── Python ────────────────────────────────────────────────────────────────────
+
+[feature.python.dependencies]
+pydantic = ">=2.12.0a1"
+pymupdf  = ">=1.26.4"
+python   = ">=3.13"
+tqdm     = ">=4.67.3"
+
+[feature.python.pypi-dependencies]
+medscan         = { path = "doculyze/medscan", editable = true }
+trust-generator = { path = "doculyze/trust-generator", editable = true }
+
+[feature.python.tasks]
+
+    [feature.python.tasks.test]
+    cmd         = "tasktools py test"
+    description = "Run pytest across Python packages. Usage: pixi run pytest [pattern=*]"
+
+    [feature.python.tasks.lint]
+    cmd         = "tasktools py lint"
+    description = "Lint with ruff only (no tests). Usage: pixi run ruff [pattern=*]"
+
+    [feature.python.tasks.typecheck]
+    cmd         = "tasktools py typecheck"
+    description = "Type-check with mypy. Usage: pixi run mypy [pattern=*]"
+
+    [feature.python.tasks.check]
+    depends-on  = ["typecheck", "lint", "test"]
+    description = "Full validation: mypy + ruff + pytest. Run after every code change. Usage: pixi run py-check [pattern=*]"

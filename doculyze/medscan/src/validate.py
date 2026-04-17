@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import re
 import typing as ty
-from apps.common import timings
 
 if ty.TYPE_CHECKING:
     from .typeshed import *
@@ -41,7 +40,9 @@ class ValidationDict(dict[ValidationSubject, ValidatedResult]):
         self[subj][verdict][item] = confidence, matches
         self.match_counts[subj][verdict] += 1
 
-    def _score_item(self, item_str: str, bonus_factor: float = 0.5) -> tuple[float, list[str]]:
+    def _score_item(
+        self, item_str: str, bonus_factor: float = 0.5
+    ) -> tuple[float, list[str]]:
         """Compute a confidence score [0,1] and return the list of matched phrases.
 
         Algorithm (greedy n-gram match):
@@ -97,8 +98,7 @@ class ValidationDict(dict[ValidationSubject, ValidatedResult]):
 
         return confidence, matched_phrases
 
-    @timings()
-    def validate(self, threshold: float = 0.5) -> tuple["ValidationDict", dict]:
+    def validate(self, threshold: float = 0.5) -> tuple[ValidationDict, dict]:
         """Validate base_results against plaintext and compute match_counts.
 
         Returns (self, match_counts). Items with confidence >= threshold are
@@ -109,7 +109,9 @@ class ValidationDict(dict[ValidationSubject, ValidatedResult]):
             for item in self.base_results.get(subj, ()):
                 item_str = str(item)
                 confidence, matches = self._score_item(item_str)
-                verdict = "verified" if confidence >= threshold and matches else "unverified"
+                verdict = (
+                    "verified" if confidence >= threshold and matches else "unverified"
+                )
                 self._set(item_str, matches, confidence, subj, verdict)
 
         return self, self.match_counts

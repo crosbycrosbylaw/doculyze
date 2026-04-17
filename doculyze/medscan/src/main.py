@@ -1,12 +1,21 @@
 from __future__ import annotations
 
-import wx
-from apps import Medscan
-from apps.goo import gooify, gooparse
+import importlib
 from typing import final
 
+from . import Medscan
+from .goo import gooify, gooparse
+
+
+def import_deps():
+    global wx
+    wx = importlib.import_module("wx")
+
+
 app = wx.App()
-description = final("Preprocess and analyze medical record PDF files using local tools and LLMs.")
+description = final(
+    "Preprocess and analyze medical record PDF files using local tools and LLMs."
+)
 
 
 @gooify("Medical Records Analyzer", desc=description)
