@@ -3138,7 +3138,7 @@ packages:
 - pypi: ./doculyze/trust-generator
   name: trust-generator
   version: 2.2.0
-  sha256: 09306beb7f13e93818e4dc7e88e25792dda6386f2e8e250893b2c7e9c0f5311c
+  sha256: 1d339438217fb2c171cf6da1015253010a65ded1863bba5811e7f4a6c82e27a8
   requires_dist:
   - python-docx
   - pydantic>=2
