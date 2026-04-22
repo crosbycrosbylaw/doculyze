@@ -171,6 +171,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d6/1d5c60cc17bbdf37c1552d9c03862fc6d32c5836732a0415b2d637edc2d0/pypdf-6.10.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d0/00/1e03a4989fa5795da308cd774f05b704ace555a70f9bf9d3be057b680bcf/python_docx-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8a/2e/e1798b8b248e1517e74c6cdf10dd6edd485044e7edf46b5f11ffcc5a0add/reportlab-4.4.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/f2/76/70ec172660f79c09a1454e76a815146824f2b246ba4be716f94d771e2bb1/types_reportlab-4.4.10.20260408-py3-none-any.whl
       - pypi: ./doculyze/core
       - pypi: ./doculyze/medscan
       - pypi: ./doculyze/trust-generator
@@ -298,6 +299,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/d6/1d5c60cc17bbdf37c1552d9c03862fc6d32c5836732a0415b2d637edc2d0/pypdf-6.10.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d0/00/1e03a4989fa5795da308cd774f05b704ace555a70f9bf9d3be057b680bcf/python_docx-1.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8a/2e/e1798b8b248e1517e74c6cdf10dd6edd485044e7edf46b5f11ffcc5a0add/reportlab-4.4.10-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/f2/76/70ec172660f79c09a1454e76a815146824f2b246ba4be716f94d771e2bb1/types_reportlab-4.4.10.20260408-py3-none-any.whl
       - pypi: ./doculyze/core
       - pypi: ./doculyze/medscan
       - pypi: ./doculyze/trust-generator
@@ -3138,13 +3140,18 @@ packages:
 - pypi: ./doculyze/trust-generator
   name: trust-generator
   version: 2.2.0
-  sha256: 1d339438217fb2c171cf6da1015253010a65ded1863bba5811e7f4a6c82e27a8
+  sha256: 7918121cf5737bfe58ec642c7c41eb958af039e618c460c9b24815af43af7101
   requires_dist:
   - python-docx
   - pydantic>=2
   - reportlab
   - pypdf>=4
   requires_python: '>=3.12'
+- pypi: https://files.pythonhosted.org/packages/f2/76/70ec172660f79c09a1454e76a815146824f2b246ba4be716f94d771e2bb1/types_reportlab-4.4.10.20260408-py3-none-any.whl
+  name: types-reportlab
+  version: 4.4.10.20260408
+  sha256: ae7635b66963d89928333a6a0f7c47109a1ffc9cbd26689f15f592c3ba958b34
+  requires_python: '>=3.10'
 - conda: https://conda.anaconda.org/conda-forge/noarch/typing-extensions-4.15.0-h396c80c_0.conda
   sha256: 7c2df5721c742c2a47b2c8f960e718c930031663ac1174da67c1ed5999f7938c
   md5: edd329d7d3a4ab45dcf905899a7a6115

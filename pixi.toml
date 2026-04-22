@@ -80,3 +80,6 @@ trust-generator = { path = "doculyze/trust-generator", editable = true }
     [feature.python.tasks.check]
     depends-on  = ["typecheck", "lint", "test"]
     description = "Full validation: mypy + ruff + pytest. Run after every code change. Usage: pixi run py-check [pattern=*]"
+
+[pypi-dependencies]
+types-reportlab = ">=4.4.10.20260408, <5"

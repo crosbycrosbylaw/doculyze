@@ -2,6 +2,7 @@
 .pixi/*
 !.pixi/config.toml
 
+node_modules/
 build/
 dist/
 

@@ -1,0 +1,63 @@
+{
+  "globals": {
+    "format": "xml",
+    "plugins": [
+      "rct-plugin-track-work"
+    ]
+  },
+  "lang": {
+    "node": {
+      "tools": [],
+      "config": [
+        {
+          "name": "tsconfig",
+          "path": "tsconfig.json",
+          "extractPaths": true
+        }
+      ]
+    },
+    "python": {
+      "tools": [
+        {
+          "name": "pixi",
+          "tasks": true,
+          "environment": true
+        }
+      ]
+    }
+  },
+  "test": {
+    "command": "pixi run test",
+    "injectOn": "SessionStart",
+    "cache": true
+  },
+  "_derived": {
+    "lang": {
+      "node": {
+        "tools": [],
+        "config": [
+          {
+            "name": "tsconfig",
+            "path": "tsconfig.json",
+            "extractPaths": true
+          }
+        ]
+      },
+      "python": {
+        "tools": [
+          {
+            "name": "pixi",
+            "tasks": true,
+            "environment": true
+          }
+        ]
+      }
+    },
+    "test": {
+      "command": "pixi run test",
+      "injectOn": "SessionStart"
+    },
+    "files": [],
+    "globals": {}
+  }
+}
